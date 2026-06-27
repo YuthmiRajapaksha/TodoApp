@@ -77,10 +77,14 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.room.Room;
 
+import android.widget.TextView;
+
 public class RegisterActivity extends AppCompatActivity {
 
     EditText etUsername, etPassword, etConfirmPassword;
     Button btnRegister;
+
+    TextView txtLogin;
 
     AppDatabase db;
 
@@ -89,10 +93,17 @@ public class RegisterActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
+        txtLogin = findViewById(R.id.txtLogin);
+
         etUsername = findViewById(R.id.etUsername);
         etPassword = findViewById(R.id.etPassword);
         etConfirmPassword = findViewById(R.id.etConfirmPassword);
         btnRegister = findViewById(R.id.btnRegister);
+
+        // Back to Login Screen
+        txtLogin.setOnClickListener(v -> {
+            finish();
+        });
 
         db = Room.databaseBuilder(
                         getApplicationContext(),
