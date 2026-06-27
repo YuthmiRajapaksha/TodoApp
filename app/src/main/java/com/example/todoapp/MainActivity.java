@@ -349,11 +349,121 @@
 //}
 
 
+//package com.example.todoapp;
+//
+//import android.content.Intent;
+//import android.os.Bundle;
+//import android.widget.Button;
+//import android.widget.TextView;
+//
+//import androidx.appcompat.app.AppCompatActivity;
+//import androidx.recyclerview.widget.LinearLayoutManager;
+//import androidx.recyclerview.widget.RecyclerView;
+//import androidx.room.Room;
+//
+//import com.example.todoapp.adapter.TodoAdapter;
+//
+//import java.util.List;
+//
+//import com.google.android.material.floatingactionbutton.FloatingActionButton;
+//
+//
+//public class MainActivity extends AppCompatActivity {
+//
+//
+//    private FloatingActionButton fabAdd;
+//    private RecyclerView recyclerTodos;
+//
+//    private TextView txtUsername;
+//    private TextView txtTotal;
+//
+//    private AppDatabase db;
+//    private TodoAdapter adapter;
+//
+//    // Logged in user
+//    private int userId;
+//    private String username;
+//
+//    @Override
+//    protected void onCreate(Bundle savedInstanceState) {
+//        super.onCreate(savedInstanceState);
+//        setContentView(R.layout.activity_main);
+//
+//        fabAdd = findViewById(R.id.fabAdd);
+//        recyclerTodos = findViewById(R.id.recyclerTodos);
+//        txtUsername = findViewById(R.id.txtUsername);
+//        txtTotal = findViewById(R.id.txtTotal);
+//
+//        db = Room.databaseBuilder(
+//                        getApplicationContext(),
+//                        AppDatabase.class,
+//                        "todo_database"
+//                )
+//                .fallbackToDestructiveMigration()
+//                .allowMainThreadQueries()
+//                .build();
+//
+//        recyclerTodos.setLayoutManager(new LinearLayoutManager(this));
+//
+//        // Get logged-in user information
+//        userId = getIntent().getIntExtra("userId", -1);
+//        username = getIntent().getStringExtra("username");
+//
+//        if (username != null) {
+//            txtUsername.setText("Welcome, " + username);
+//        }
+//
+//        fabAdd.setOnClickListener(v -> {
+//
+//            Intent intent = new Intent(
+//                    MainActivity.this,
+//                    AddTodoActivity.class
+//            );
+//
+//            // Pass logged-in user id
+//            intent.putExtra("userId", userId);
+//
+//            startActivity(intent);
+//
+//        });
+//
+//    }
+//
+//    @Override
+//    protected void onResume() {
+//        super.onResume();
+//        loadTodos();
+//    }
+//
+//    private void loadTodos() {
+//
+//        List<Todo> todoList =
+//                db.todoDao().getTodosByUser(userId);
+//
+//        txtTotal.setText("Total Todos : " + todoList.size());
+//
+//        adapter = new TodoAdapter(
+//                this,
+//                todoList,
+//                db
+//        );
+//
+//        recyclerTodos.setAdapter(adapter);
+//
+//    }
+//}
+
+
+
+
+
 package com.example.todoapp;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.widget.Button;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -362,21 +472,25 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.room.Room;
 
 import com.example.todoapp.adapter.TodoAdapter;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    private Button btnAddTodo;
+    private FloatingActionButton fabAdd;
     private RecyclerView recyclerTodos;
 
     private TextView txtUsername;
     private TextView txtTotal;
+    private TextView txtCompleted;
+    private TextView txtPending;
+
+    private EditText etSearch;
 
     private AppDatabase db;
     private TodoAdapter adapter;
 
-    // Logged in user
     private int userId;
     private String username;
 
@@ -385,10 +499,15 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        btnAddTodo = findViewById(R.id.btnAddTodo);
+        fabAdd = findViewById(R.id.fabAdd);
         recyclerTodos = findViewById(R.id.recyclerTodos);
+
         txtUsername = findViewById(R.id.txtUsername);
         txtTotal = findViewById(R.id.txtTotal);
+        txtCompleted = findViewById(R.id.txtCompleted);
+        txtPending = findViewById(R.id.txtPending);
+
+        etSearch = findViewById(R.id.etSearch);
 
         db = Room.databaseBuilder(
                         getApplicationContext(),
@@ -401,26 +520,63 @@ public class MainActivity extends AppCompatActivity {
 
         recyclerTodos.setLayoutManager(new LinearLayoutManager(this));
 
-        // Get logged-in user information
+        // Get logged-in user
         userId = getIntent().getIntExtra("userId", -1);
         username = getIntent().getStringExtra("username");
 
         if (username != null) {
-            txtUsername.setText("Welcome, " + username);
+            txtUsername.setText("Welcome, " + username + " 👋");
         }
 
-        btnAddTodo.setOnClickListener(v -> {
+        fabAdd.setOnClickListener(v -> {
 
             Intent intent = new Intent(
                     MainActivity.this,
                     AddTodoActivity.class
             );
 
-            // Pass logged-in user id
             intent.putExtra("userId", userId);
 
             startActivity(intent);
 
+        });
+
+        etSearch.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+//            @Override
+//            public void onTextChanged(CharSequence s, int start, int before, int count) {
+//
+//                // Search feature will be added next
+//
+//            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+                List<Todo> filtered =
+                        db.todoDao().searchTodos(
+                                userId,
+                                s.toString()
+                        );
+
+                adapter = new TodoAdapter(
+                        MainActivity.this,
+                        filtered,
+                        db
+                );
+
+                recyclerTodos.setAdapter(adapter);
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
         });
 
     }
@@ -431,12 +587,56 @@ public class MainActivity extends AppCompatActivity {
         loadTodos();
     }
 
+//    private void loadTodos() {
+//
+//        List<Todo> todoList = db.todoDao().getTodosByUser(userId);
+//
+//        int completed = 0;
+//
+//        for (Todo todo : todoList) {
+//
+//            if (todo.completed) {
+//                completed++;
+//            }
+//
+//        }
+//
+//        int pending = todoList.size() - completed;
+//
+//        txtTotal.setText(String.valueOf(todoList.size()));
+//        txtCompleted.setText(String.valueOf(completed));
+//        txtPending.setText(String.valueOf(pending));
+//
+//        adapter = new TodoAdapter(
+//                this,
+//                todoList,
+//                db
+//        );
+//
+//        recyclerTodos.setAdapter(adapter);
+//
+//    }
+//
+
     private void loadTodos() {
 
-        List<Todo> todoList =
-                db.todoDao().getTodosByUser(userId);
+        List<Todo> todoList = db.todoDao().getTodosByUser(userId);
 
-        txtTotal.setText("Total Todos : " + todoList.size());
+        int completed = 0;
+
+        for (Todo todo : todoList) {
+
+            if (todo.completed) {
+                completed++;
+            }
+
+        }
+
+        int pending = todoList.size() - completed;
+
+        txtTotal.setText(String.valueOf(todoList.size()));
+        txtCompleted.setText(String.valueOf(completed));
+        txtPending.setText(String.valueOf(pending));
 
         adapter = new TodoAdapter(
                 this,
@@ -447,4 +647,5 @@ public class MainActivity extends AppCompatActivity {
         recyclerTodos.setAdapter(adapter);
 
     }
+
 }
