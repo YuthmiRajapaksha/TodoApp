@@ -147,12 +147,30 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.ViewHolder> {
         holder.txtDescription.setText(todo.description);
         holder.txtDueDate.setText("📅 " + todo.dueDate);
         holder.txtTags.setText("🏷 " + todo.tags);
-        holder.txtPriority.setText("Priority : " + todo.priority);
+//        holder.txtPriority.setText("Priority : " + todo.priority);
+
+        holder.txtPriority.setText(todo.priority);
+
+        if (todo.priority.equalsIgnoreCase("High")) {
+
+            holder.txtPriority.setBackgroundResource(R.drawable.priority_high);
+
+        } else if (todo.priority.equalsIgnoreCase("Medium")) {
+
+            holder.txtPriority.setBackgroundResource(R.drawable.priority_medium);
+
+        } else {
+
+            holder.txtPriority.setBackgroundResource(R.drawable.priority_low);
+
+        }
 
         holder.chkCompleted.setOnCheckedChangeListener(null);
         holder.chkCompleted.setChecked(todo.completed);
 
         if (todo.completed) {
+
+            holder.itemView.setAlpha(0.6f);
 
             holder.txtTitle.setPaintFlags(
                     holder.txtTitle.getPaintFlags()
@@ -161,6 +179,8 @@ public class TodoAdapter extends RecyclerView.Adapter<TodoAdapter.ViewHolder> {
             holder.txtTitle.setAlpha(0.5f);
 
         } else {
+
+            holder.itemView.setAlpha(1f);
 
             holder.txtTitle.setPaintFlags(Paint.ANTI_ALIAS_FLAG);
             holder.txtTitle.setAlpha(1f);

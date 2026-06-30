@@ -476,6 +476,9 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.List;
 
+import android.widget.Button;
+import android.widget.ImageButton;
+
 public class MainActivity extends AppCompatActivity {
 
     private FloatingActionButton fabAdd;
@@ -494,10 +497,13 @@ public class MainActivity extends AppCompatActivity {
     private int userId;
     private String username;
 
+    private ImageButton btnLogout;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
 
         fabAdd = findViewById(R.id.fabAdd);
         recyclerTodos = findViewById(R.id.recyclerTodos);
@@ -508,6 +514,7 @@ public class MainActivity extends AppCompatActivity {
         txtPending = findViewById(R.id.txtPending);
 
         etSearch = findViewById(R.id.etSearch);
+        btnLogout = findViewById(R.id.btnLogout);
 
         db = Room.databaseBuilder(
                         getApplicationContext(),
@@ -538,6 +545,33 @@ public class MainActivity extends AppCompatActivity {
             intent.putExtra("userId", userId);
 
             startActivity(intent);
+
+        });
+
+
+        btnLogout.setOnClickListener(v -> {
+
+            new androidx.appcompat.app.AlertDialog.Builder(MainActivity.this)
+                    .setTitle("Logout")
+                    .setMessage("Do you want to logout?")
+                    .setPositiveButton("Logout", (dialog, which) -> {
+
+                        Intent intent = new Intent(
+                                MainActivity.this,
+                                LoginActivity.class
+                        );
+
+                        intent.setFlags(
+                                Intent.FLAG_ACTIVITY_NEW_TASK |
+                                        Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        );
+
+                        startActivity(intent);
+                        finish();
+
+                    })
+                    .setNegativeButton("Cancel", null)
+                    .show();
 
         });
 
@@ -620,7 +654,8 @@ public class MainActivity extends AppCompatActivity {
 
     private void loadTodos() {
 
-        List<Todo> todoList = db.todoDao().getTodosByUser(userId);
+//        List<Todo> todoList = db.todoDao().getTodosByUser(userId);
+        List<Todo> todoList = db.todoDao().getTodosByPriority(userId);
 
         int completed = 0;
 
